@@ -2,25 +2,33 @@ import { signal, effect } from "@preact/signals";
 
 // Import your new JSON files
 import en from './locales/en.json';
-import de from './locales/de.json';
-import it from './locales/it.json';
 import es from './locales/es.json';
-import sv from './locales/sv.json';
 
-export type Language = 'en' | 'de' | 'it' | 'es' | 'sv';
+export type Language = 'es' | 'en';
 
-const savedLang = localStorage.getItem("carbon-app-lang") as Language;
-export const currentLang = signal<Language>(savedLang || 'en');
+const LANG_KEY = "geo-carbono-idioma";
+
+function loadLang(): Language {
+  try {
+    const saved = localStorage.getItem(LANG_KEY);
+    return saved === 'en' ? 'en' : 'es';
+  } catch {
+    return 'es';
+  }
+}
+export const currentLang = signal<Language>(loadLang());
 
 effect(() => {
-  localStorage.setItem("carbon-app-lang", currentLang.value);
+  try {
+    localStorage.setItem(LANG_KEY, currentLang.value);
+  } catch {
+    // sin almacenamiento disponible
+  }
 });
 
 // Map the imported JSON files to our dictionary object
-const dictionary: Record<Language, Record<string, string>> = {
-  en, de, it, es, sv
-};
+const dictionary: Record<Language, Record<string, string>> = { es, en };
 
 export function t(key: string): string {
-  return dictionary[currentLang.value]?.[key] || dictionary['en'][key] || key;
+  return dictionary[currentLang.value]?.[key] || dictionary['es'][key] || key;
 }

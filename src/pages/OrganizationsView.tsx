@@ -24,7 +24,7 @@ export function OrganizationsView() {
 
   return (
     <div>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-8 text-gray-900">🏢 {t('yourOrganizations')}</h2>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-8 text-gray-900">🏭 {t('yourOrganizations')}</h2>
       
       {organizations.value.length === 0 ? (
         <div class="text-center py-12">

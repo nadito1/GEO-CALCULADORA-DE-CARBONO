@@ -1,83 +1,76 @@
-import type { ModuleInstance } from '../types';
-import { MODULE_CATALOG } from '../data/moduleCatalog';
-import type { CountryCode } from '../data/factors';
+import type { ModuleInstance, Organization } from '../types';
+import { MODULE_CATALOG, SCOPE_INFO } from '../data/moduleCatalog';
+import { moduleCO2, formatCO2, formatNumber } from '../data/footprint';
 import { t } from '../i18n';
 
 interface Props {
   moduleInstance: ModuleInstance;
-  country: CountryCode;
+  org: Organization;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export function ModuleCard({ moduleInstance, country, onEdit, onDelete }: Props) {
-  // Look up the definition to get the title, description, and formula
+export function ModuleCard({ moduleInstance, org, onEdit, onDelete }: Props) {
   const def = MODULE_CATALOG[moduleInstance.defId];
-  if (!def) return null; // Safety check in case a module is removed from the catalog
+  if (!def) return null;
 
-  // Calculate the total CO2 for this specific card, injecting the country factor
-  const co2 = def.calculateCO2(moduleInstance.value, moduleInstance.submoduleValues, country);
+  const co2 = moduleCO2(moduleInstance, org);
+  const scope = def.scope === 0 ? null : SCOPE_INFO[def.scope];
+
+  // Solo mostramos los campos cargados (distintos de cero) para que la tarjeta sea legible.
+  const filled = (def.submodules || []).filter(s => (moduleInstance.submoduleValues?.[s.id] || 0) !== 0);
 
   return (
-    <div class="border border-gray-200 rounded-lg p-4 sm:p-6 bg-white shadow-sm mb-4 transition-shadow hover:shadow-md">
-      
-      {/* Header & Total CO2 */}
-      <div class="flex flex-col sm:flex-row justify-between items-start mb-4 gap-3">
-        <div class="flex items-start gap-2 sm:gap-3 flex-1">
+    <div class="border border-gray-200 rounded-lg p-4 sm:p-5 bg-white shadow-sm mb-4 transition-shadow hover:shadow-md">
+      <div class="flex justify-between items-start gap-3 mb-3">
+        <div class="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
           <div class="text-2xl sm:text-3xl flex-shrink-0">{def.icon}</div>
           <div class="min-w-0">
-            <h3 class="m-0 mb-1 text-base sm:text-lg font-bold text-gray-900">{def.title}</h3>
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <h3 class="m-0 text-base sm:text-lg font-bold text-gray-900">{def.title}</h3>
+              {scope && (
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: scope.color }}>
+                  {scope.label}{def.category ? ` · ${def.category}` : ''}
+                </span>
+              )}
+            </div>
             <p class="m-0 text-gray-500 text-xs sm:text-sm break-words">{def.description}</p>
           </div>
         </div>
         <div class="text-right flex-shrink-0">
-          <div class="text-xl sm:text-2xl font-bold text-red-600">
-            {/* Added rounding so we don't get crazy long decimals like 14.000000001 */}
-            {co2.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg
-          </div>
+          {def.scope === 0 ? (
+            <div class="text-lg sm:text-xl font-bold text-gray-700">{formatNumber(moduleInstance.value, 0)} {def.unit}</div>
+          ) : (
+            <div class="text-lg sm:text-xl font-bold text-red-700">{formatCO2(co2)}</div>
+          )}
         </div>
       </div>
 
-      {/* Values Display */}
-      <div class="bg-gray-50 p-3 sm:p-4 rounded-md text-sm">
-        <div class={`flex justify-between ${def.submodules ? 'font-normal text-gray-600' : 'font-bold text-gray-800'}`}>
-          <span>{t('value')}:</span>
-          <span>
-            {def.submodules && def.submodules.length > 0
-              ? `${Object.values(moduleInstance.submoduleValues || {}).reduce((sum, val) => sum + (val || 0), 0)} ${def.unit}`
-              : `${moduleInstance.value} ${def.unit}`
-            }
-          </span>
-        </div>
-        
-        {/* Render Submodules if they exist */}
-        {def.submodules && def.submodules.length > 0 && (
-          <div class="border-t border-gray-200 pt-3 mt-3">
-            <p class="m-0 mb-2 text-xs sm:text-sm font-bold text-gray-600">{t('breakdown')}:</p>
+      {def.submodules && def.submodules.length > 0 && (
+        <div class="bg-gray-50 p-3 rounded-md text-sm">
+          <p class="m-0 mb-2 text-xs font-bold text-gray-600">{t('breakdown')}:</p>
+          {filled.length === 0 ? (
+            <p class="m-0 text-xs text-gray-400">{t('noValuesLoaded')}</p>
+          ) : (
             <div class="space-y-1">
-              {def.submodules.map(sub => (
-                <div key={sub.id} class="flex justify-between text-xs sm:text-sm text-gray-500">
-                  <span>{sub.title}</span>
-                  <span class="font-medium text-gray-700">{moduleInstance.submoduleValues?.[sub.id] || 0} {def.unit}</span>
+              {filled.map(sub => (
+                <div key={sub.id} class="flex justify-between gap-3 text-xs sm:text-sm text-gray-500">
+                  <span>{sub.group && sub.group !== 'Datos generales' ? `${sub.group} – ` : ''}{sub.title}</span>
+                  <span class="font-medium text-gray-700 whitespace-nowrap">
+                    {formatNumber(moduleInstance.submoduleValues?.[sub.id] || 0)} {sub.unit ?? def.unit}
+                  </span>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
-      {/* Action Buttons */}
-      <div class="flex gap-2 mt-4 sm:mt-5 justify-end">
-        <button 
-          onClick={onEdit} 
-          class="px-3 sm:px-4 py-1 sm:py-1.5 cursor-pointer rounded text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm"
-        >
+      <div class="flex gap-2 mt-4 justify-end">
+        <button onClick={onEdit} class="px-3 sm:px-4 py-1 sm:py-1.5 rounded text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm">
           {t('edit')}
         </button>
-        <button 
-          onClick={onDelete} 
-          class="px-3 sm:px-4 py-1 sm:py-1.5 cursor-pointer text-red-600 bg-transparent border border-red-600 rounded hover:bg-red-50 font-medium transition-colors text-sm"
-        >
+        <button onClick={onDelete} class="px-3 sm:px-4 py-1 sm:py-1.5 text-red-600 border border-red-600 rounded hover:bg-red-50 font-medium transition-colors text-sm">
           {t('delete')}
         </button>
       </div>

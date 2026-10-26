@@ -1,0 +1,184 @@
+{
+  "meta": {
+    "country": "Argentina",
+    "gwpSet": "IPCC AR5 (100 años)",
+    "mainSource": "Factores de Emisión GEI SNIGEI-AR para Huella de Carbono, edición 2025 (Subsecretaría de Ambiente de la Nación, datos del Inventario Nacional 2022)",
+    "mainSourceUrl": "https://inventariogei.ambiente.gob.ar/files/Factores_de_Emision_SNIGEIAR_para_HC_2025.pdf",
+    "transportSource": "UK DESNZ – Greenhouse gas reporting: conversion factors 2025",
+    "transportSourceUrl": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025"
+  },
+  "gwp": {
+    "ch4": 28,
+    "n2o": 265
+  },
+  "fuels": {
+    "gas_natural": {
+      "label": "Gas natural (fuentes fijas)",
+      "unit": "m³",
+      "co2": 1.951,
+      "ch4": 0.0001743,
+      "n2o": 0.0000033,
+      "source": "SNIGEI-AR 2025, Tabla 4"
+    },
+    "gasoil_fijo": {
+      "label": "Gasoil – equipos fijos (grupos, calderas)",
+      "unit": "L",
+      "co2": 2.529,
+      "ch4": 0.0003612,
+      "n2o": 0.0000258,
+      "source": "SNIGEI-AR 2025, Tabla 4 (Grado 2)"
+    },
+    "fuel_oil": {
+      "label": "Fuel oil",
+      "unit": "L",
+      "co2": 2.861,
+      "ch4": 0.0003746,
+      "n2o": 0.0000268,
+      "source": "SNIGEI-AR 2025, Tabla 4"
+    },
+    "glp": {
+      "label": "GLP (hornos, autoelevadores)",
+      "unit": "kg",
+      "co2": 2.901,
+      "ch4": 0.0002331,
+      "n2o": 0.0000044,
+      "source": "SNIGEI-AR 2025, Tabla 4"
+    },
+    "gasoil_movil": {
+      "label": "Gasoil vehicular (corte 7,5% biodiésel)",
+      "unit": "L",
+      "co2": 2.339,
+      "ch4": 0.00013664,
+      "n2o": 0.00013664,
+      "source": "SNIGEI-AR 2025, Tabla 2 (Grado 2, desde 2022). CO₂ biogénico excluido."
+    },
+    "nafta": {
+      "label": "Nafta súper (corte 12% bioetanol)",
+      "unit": "L",
+      "co2": 1.9693,
+      "ch4": 0.0009567,
+      "n2o": 0.000093756,
+      "source": "SNIGEI-AR 2025, Tabla 2 (Grado 2). CO₂ biogénico excluido."
+    },
+    "gnc": {
+      "label": "GNC vehicular",
+      "unit": "m³",
+      "co2": 1.95133,
+      "ch4": 0.0031955,
+      "n2o": 0.0001079,
+      "source": "SNIGEI-AR 2025, Tabla 3"
+    }
+  },
+  "electricity": {
+    "red": {
+      "label": "Red eléctrica nacional (año 2022, último publicado)",
+      "unit": "kWh",
+      "co2": 0.283,
+      "ch4": 0.0000167,
+      "n2o": 0.0000097,
+      "source": "SNIGEI-AR 2025, Tabla 5"
+    }
+  },
+  "refrigerants": {
+    "r22": { "label": "R-22 (HCFC-22)", "gwp": 1760 },
+    "r134a": { "label": "R-134a", "gwp": 1300 },
+    "r404a": { "label": "R-404A", "gwp": 3943 },
+    "r407c": { "label": "R-407C", "gwp": 1624.2 },
+    "r410a": { "label": "R-410A", "gwp": 1923.5 },
+    "r507a": { "label": "R-507A", "gwp": 3985 },
+    "r417a": { "label": "R-417A", "gwp": 2127.22 },
+    "r32": { "label": "R-32", "gwp": 677 },
+    "r290": { "label": "R-290 (propano)", "gwp": 0.02 },
+    "r717": { "label": "R-717 (amoníaco)", "gwp": 0 },
+    "r744": { "label": "R-744 (CO₂)", "gwp": 1 }
+  },
+  "refrigerantsSource": "SNIGEI-AR 2025, Tabla 7 (PCG AR5). Amoníaco y CO₂: valores IPCC AR5.",
+  "transport": {
+    "auto_nafta": {
+      "label": "Auto a nafta",
+      "unit": "kg CO₂e / km de vehículo",
+      "value": 0.16272,
+      "source": "DESNZ 2025 – auto promedio, nafta"
+    },
+    "auto_gasoil": {
+      "label": "Auto a gasoil",
+      "unit": "kg CO₂e / km de vehículo",
+      "value": 0.17304,
+      "source": "DESNZ 2025 – auto promedio, diésel"
+    },
+    "auto_gnc": {
+      "label": "Auto a GNC",
+      "unit": "kg CO₂e / km de vehículo",
+      "value": 0.1552,
+      "source": "Derivado: factor GNC SNIGEI-AR 2025 (2,069 kg/m³) × consumo medio supuesto 7,5 m³/100 km"
+    },
+    "moto": {
+      "label": "Moto",
+      "unit": "kg CO₂e / km",
+      "value": 0.11367,
+      "source": "DESNZ 2025 – moto promedio"
+    },
+    "colectivo": {
+      "label": "Colectivo urbano",
+      "unit": "kg CO₂e / pasajero-km",
+      "value": 0.10385,
+      "source": "DESNZ 2025 – colectivo local promedio"
+    },
+    "micro_empresa": {
+      "label": "Micro / combi contratado por la empresa",
+      "unit": "kg CO₂e / pasajero-km",
+      "value": 0.02776,
+      "source": "DESNZ 2025 – micro (coach)"
+    },
+    "remis": {
+      "label": "Remís / taxi",
+      "unit": "kg CO₂e / pasajero-km",
+      "value": 0.14861,
+      "source": "DESNZ 2025 – taxi regular"
+    },
+    "avion_nacional": {
+      "label": "Avión – vuelo nacional",
+      "unit": "kg CO₂e / pasajero-km",
+      "value": 0.229,
+      "source": "DESNZ 2025 – vuelo doméstico, con forzamiento radiativo"
+    },
+    "avion_internacional": {
+      "label": "Avión – vuelo internacional (turista)",
+      "unit": "kg CO₂e / pasajero-km",
+      "value": 0.117,
+      "source": "DESNZ 2025 – larga distancia, clase turista, con forzamiento radiativo"
+    },
+    "micro_larga_distancia": {
+      "label": "Micro de larga distancia",
+      "unit": "kg CO₂e / pasajero-km",
+      "value": 0.02776,
+      "source": "DESNZ 2025 – micro (coach)"
+    }
+  },
+  "waste": {
+    "relleno_sin_captura": {
+      "label": "Relleno sanitario sin captura de metano",
+      "ch4": 0.052,
+      "n2o": 0,
+      "source": "SNIGEI-AR 2025, Tabla 19"
+    },
+    "relleno_con_captura": {
+      "label": "Relleno sanitario con captura de metano",
+      "ch4": 0.042,
+      "n2o": 0,
+      "source": "SNIGEI-AR 2025, Tabla 19"
+    },
+    "compost": {
+      "label": "Compostaje",
+      "ch4": 0.004,
+      "n2o": 0.0003,
+      "source": "SNIGEI-AR 2025, Tabla 19"
+    },
+    "reciclaje": {
+      "label": "Reciclaje",
+      "ch4": 0,
+      "n2o": 0,
+      "source": "Método de corte (cut-off): las emisiones se asignan al producto reciclado"
+    }
+  }
+}

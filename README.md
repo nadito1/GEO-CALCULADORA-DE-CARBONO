@@ -1,151 +1,48 @@
-[![test]](https://github.com/tfobz/carbon-calculator/actions/workflows/build.yml)
-[![deploy]](https://github.com/tfobz/carbon-calculator/actions/workflows/deploy.yml)
-[![wiki]](https://github.com/tfobz/carbon-calculator/wiki)
+# 🏭 GEO Calculadora de Carbono
 
-[test]: https://img.shields.io/github/actions/workflow/status/tfobz/carbon-calculator/build.yml?label=Test&logo=githubactions&style=for-the-badge&labelColor=555555
-[deploy]: https://img.shields.io/github/actions/workflow/status/tfobz/carbon-calculator/deploy.yml?label=Deploy&logo=githubactions&style=for-the-badge&labelColor=555555
-[wiki]: https://img.shields.io/badge/Wiki-Documentation-blueviolet?style=for-the-badge&logo=github&labelColor=555555
+Web app instalable (PWA) para calcular la **huella de carbono de cada planta**, con desglose por alcance del GHG Protocol e indicador de intensidad (kg CO₂e por kg producido).
 
-# ♻️ Carbon Calculator
+## Qué calcula
 
-A modern, responsive web application that helps organizations track and calculate their carbon dioxide (CO₂) emissions. Built with [Preact](https://preactjs.com/), [TypeScript](https://www.typescriptlang.org/), and [Tailwind CSS](https://tailwindcss.com/).
+| Alcance | Fuente | Dato a cargar |
+|---|---|---|
+| 1 | Gas natural | m³ (factura) |
+| 1 | Otros combustibles en planta | L de gasoil, kg de GLP, L de fuel oil |
+| 1 | Vehículos propios | L de gasoil / nafta, m³ de GNC |
+| 1 | Recarga de refrigerantes | kg por tipo de gas (R-404A, R-507A, amoníaco, etc.) |
+| 2 | Electricidad | kWh de red (y renovable certificada, que no suma) |
+| 3 · Cat. 7 | **Traslados del personal** | personas y km por trayecto según medio (auto, moto, colectivo, micro de la empresa, remís), días trabajados |
+| 3 · Cat. 6 | Viajes de trabajo | km por medio (auto, avión, micro) |
+| 3 · Cat. 5 | Residuos | kg según destino (relleno, compost, reciclaje) |
+| – | Producción | kg producidos (para la intensidad) |
 
-## 📋 About
+Traslados: `personas × km por trayecto × 2 × días × factor`. En autos el factor es por km de vehículo y se divide por las personas por auto.
 
-Carbon Calculator is an open-source Progressive Web App (PWA) designed to make carbon footprint tracking accessible and intuitive. Organizations can:
+## Factores de emisión
 
-- **Track multiple organizations** with different countries and emission factors
-- **Add modular consumption data** for various categories (food, energy, transport, equipment, etc.)
-- **Calculate CO₂ emissions** based on country-specific emission factors
-- **Compare emissions** between organizations with visual charts and analytics
-- **Export and import data** for backup and sharing
-- **Work offline** thanks to PWA technology
-- **Use multiple languages** (English, German, Italian, Spanish, Swedish)
+- **Argentina (principal):** [Factores de Emisión GEI SNIGEI-AR para Huella de Carbono, 2025](https://inventariogei.ambiente.gob.ar/files/Factores_de_Emision_SNIGEIAR_para_HC_2025.pdf), de la Subsecretaría de Ambiente de la Nación (datos del Inventario Nacional 2022). Combustibles, red eléctrica, refrigerantes y residuos. PCG IPCC AR5.
+- **Transporte de personas por km:** [UK DESNZ – conversion factors 2025](https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025), porque no hay factores oficiales argentinos por km.
 
+Todos los factores están en [`src/data/factors/ar.json`](src/data/factors/ar.json) con su fuente; para actualizarlos se edita solo ese archivo. La pestaña **Metodología** de la app los muestra en tablas.
 
-## 🚀 Quick Start
+## Cómo se usan los datos
 
-### Prerequisites
+Cada dispositivo guarda sus datos localmente. Para consolidar todas las plantas: cada planta exporta su archivo desde **Configuración** y quien consolida los importa (las plantas nuevas se agregan, las existentes se actualizan).
 
-- [Node.js](https://nodejs.org/) 20.0 or higher
-- npm or yarn
+## Desarrollo
 
-### Installation
+Requiere Node.js 20 o superior.
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/carbon-calculator.git
-cd carbon-calculator
-```
-
-2. Install dependencies:
 ```bash
 npm install
+npm run dev      # http://localhost:5173
+npm run build    # genera dist/
 ```
 
-### Development
+Al hacer push a `master`, GitHub Actions publica la app en GitHub Pages (hay que activar Pages con origen "GitHub Actions" en Settings → Pages).
 
-Start the development server:
+Stack: Preact, TypeScript, Tailwind CSS, Vite, vite-plugin-pwa, Recharts.
 
-```bash
-npm run dev
-```
+## Licencia y créditos
 
-The app will open at `http://localhost:5173/`
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-This creates an optimized production build in the `dist/` directory.
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-
-## 📦 Project Structure
-
-```
-carbon-calculator/
-├── src/
-│   ├── components/          # Reusable UI components
-│   ├── pages/              # Page views (Dashboard, Settings, etc.)
-│   ├── data/
-│   │   ├── factors/        # Country-specific emission factors (JSON)
-│   │   ├── moduleCatalog.ts # Module definitions
-│   │   └── factors.ts      # Factor loading
-│   ├── locales/            # Translation files (i18n)
-│   ├── app.tsx             # Root component
-│   ├── store.ts            # State management (Preact Signals)
-│   ├── types.ts            # TypeScript type definitions
-│   └── main.tsx            # Entry point
-├── public/                 # Static assets
-├── package.json
-├── vite.config.ts
-└── tsconfig.json
-```
-
-## 🛠️ Tech Stack
-
-- **Framework**: [Preact](https://preactjs.com/) - Fast 3kB React alternative
-- **State Management**: [@preact/signals](https://preactjs.com/guide/v10/signals/) - Fine-grained reactivity
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
-- **Build Tool**: [Vite](https://vitejs.dev/) - Lightning fast build tool
-- **PWA**: [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) - PWA support
-- **Charts**: [Recharts](https://recharts.org/) - React charting library
-- **Language**: [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
-
-## 🌍 Supported Countries & Languages
-
-### Countries (Emission Factors)
-- 🇦🇹 Austria
-- 🇮🇹 Italy
-- 🇪🇸 Spain
-- 🇸🇪 Sweden
-
-### Languages
-- 🇬🇧 English
-- 🇩🇪 Deutsch
-- 🇮🇹 Italiano
-- 🇪🇸 Español
-- 🇸🇪 Svenska
-
-## 📱 PWA Features
-
-The app can be installed on any device as a Progressive Web App:
-
-- **Installable** on desktop, iOS, and Android
-- **Offline Support** - Works without internet connection
-- **App-like Experience** - Full-screen, native feel
-- **Fast Performance** - Pre-cached assets, instant load times
-
-## 📊 Emission Factors
-
-Emission factors are customizable per country and stored in JSON format. Currently supported:
-
-- Pizza/Food consumption
-- Coffee and beverages
-- Paper usage
-- Technology (computers, laptops, servers, printers)
-- Mobility/Transportation
-- Electricity by source
-- Water usage
-- Heating
-- And more...
-
-## 🤝 Contributing
-
-This project was developed as part of the Erasmus+ program. We welcome contributions!
-
-## 📄 License
-
-[MIT](/LICENSE)
-
-## 🙋 Support
-
-For issues, questions, or suggestions, please open an issue on GitHub.
+[MIT](LICENSE). Basado en [Carbon Calculator](https://github.com/tfobz/carbon-calculator), desarrollado por estudiantes de la TFO "Max Valier" (Bolzano) en el marco de Erasmus+.
