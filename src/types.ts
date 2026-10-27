@@ -49,4 +49,10 @@ export interface Organization {
   description?: string;
   country: CountryCode;
   modules: ModuleInstance[];
+  /** Última modificación (ISO). */
+  updatedAt?: string;
+  /** Última vez que se confirmó guardada en el registro central (ISO). */
+  syncedAt?: string;
+  /** Quién hizo la última modificación (dato del registro central). */
+  updatedBy?: string;
 }

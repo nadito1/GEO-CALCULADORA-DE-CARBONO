@@ -41,7 +41,7 @@ export function ModuleCard({ moduleInstance, org, onEdit, onDelete }: Props) {
           {def.scope === 0 ? (
             <div class="text-lg sm:text-xl font-bold text-gray-700">{formatNumber(moduleInstance.value, 0)} {def.unit}</div>
           ) : (
-            <div class="text-lg sm:text-xl font-bold text-red-700">{formatCO2(co2)}</div>
+            <div class="text-lg sm:text-xl font-bold text-accent-700">{formatCO2(co2)}</div>
           )}
         </div>
       </div>
@@ -70,7 +70,7 @@ export function ModuleCard({ moduleInstance, org, onEdit, onDelete }: Props) {
         <button onClick={onEdit} class="px-3 sm:px-4 py-1 sm:py-1.5 rounded text-gray-700 hover:bg-gray-100 font-medium transition-colors text-sm">
           {t('edit')}
         </button>
-        <button onClick={onDelete} class="px-3 sm:px-4 py-1 sm:py-1.5 text-red-600 border border-red-600 rounded hover:bg-red-50 font-medium transition-colors text-sm">
+        <button onClick={onDelete} class="px-3 sm:px-4 py-1 sm:py-1.5 text-accent-600 border border-accent-600 rounded hover:bg-accent-50 font-medium transition-colors text-sm">
           {t('delete')}
         </button>
       </div>

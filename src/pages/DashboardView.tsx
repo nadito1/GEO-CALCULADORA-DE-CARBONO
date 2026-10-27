@@ -37,12 +37,19 @@ export function DashboardView() {
   return (
     <div>
       <h2 class="text-2xl sm:text-3xl font-bold mb-1">{org.name}</h2>
-      {org.description && <p class="text-gray-600 text-xs sm:text-sm mb-6">{org.description}</p>}
+      {org.description && <p class="text-gray-600 text-xs sm:text-sm mb-1">{org.description}</p>}
+      {org.updatedAt && (
+        <p class="text-gray-400 text-[11px] mb-6">
+          {t('lastUpdate')} {new Date(org.updatedAt).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}
+          {org.updatedBy ? ` · ${org.updatedBy}` : ''}
+        </p>
+      )}
+      {!org.updatedAt && <div class="mb-6" />}
 
       {/* Total */}
-      <div class="mb-4 bg-gradient-to-r from-red-50 to-orange-50 p-4 sm:p-6 rounded-lg border border-red-200">
+      <div class="mb-4 bg-gradient-to-r from-accent-50 to-brand-50 p-4 sm:p-6 rounded-lg border border-accent-200">
         <p class="text-gray-600 text-xs sm:text-sm mb-1">{t('totalCO2')}</p>
-        <h3 class="text-2xl sm:text-4xl font-bold text-red-700 m-0">{formatCO2(fp.total)}</h3>
+        <h3 class="text-2xl sm:text-4xl font-bold text-accent-700 m-0">{formatCO2(fp.total)}</h3>
         {fp.intensity !== null && (
           <p class="m-0 mt-2 text-sm text-gray-700">
             <b>{formatNumber(fp.intensity, 3)} kg CO₂e</b> {t('perKgProduced')} ({formatNumber(fp.production, 0)} kg)
@@ -71,7 +78,7 @@ export function DashboardView() {
       </div>
 
       {people > 0 && (
-        <div class="mb-6 p-3 sm:p-4 rounded-lg border border-cyan-200 bg-cyan-50 text-sm text-cyan-900">
+        <div class="mb-6 p-3 sm:p-4 rounded-lg border border-brand-200 bg-brand-50 text-sm text-brand-900">
           🚗 {t('commuteSummary')
             .replace('{kg}', formatCO2(commuteKg))
             .replace('{people}', formatNumber(people, 0))
@@ -114,7 +121,7 @@ export function DashboardView() {
       <div class="flex justify-center py-6 sm:py-8 border-t border-gray-200">
         <button
           onClick={() => (showAddModal.value = true)}
-          class="px-6 sm:px-8 py-2 sm:py-3 bg-green-700 text-white font-bold rounded-lg hover:bg-green-800 transition-colors shadow-lg text-sm sm:text-lg flex items-center gap-2"
+          class="px-6 sm:px-8 py-2 sm:py-3 bg-brand-700 text-white font-bold rounded-lg hover:bg-brand-800 transition-colors shadow-lg text-sm sm:text-lg flex items-center gap-2"
         >
           ➕ {t('addModuleBtn')}
         </button>

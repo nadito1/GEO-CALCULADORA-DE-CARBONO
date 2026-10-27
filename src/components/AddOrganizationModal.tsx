@@ -30,7 +30,7 @@ export function AddOrganizationModal({ onClose, onConfirm }: Props) {
               placeholder={t('organizationNamePlaceholder')}
               value={name}
               onInput={(e) => setName((e.target as HTMLInputElement).value)}
-              class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm"
+              class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brand-500 text-sm"
             />
             <p class="text-[11px] text-gray-500 mt-1">{t('organizationNameHint')}</p>
           </div>
@@ -42,7 +42,7 @@ export function AddOrganizationModal({ onClose, onConfirm }: Props) {
               placeholder={t('descriptionPlaceholder')}
               value={description}
               onInput={(e) => setDescription((e.target as HTMLInputElement).value)}
-              class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm"
+              class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brand-500 text-sm"
             />
           </div>
 
@@ -50,7 +50,7 @@ export function AddOrganizationModal({ onClose, onConfirm }: Props) {
             <button type="button" onClick={onClose} class="px-3 sm:px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-medium text-sm">
               {t('cancel')}
             </button>
-            <button type="submit" class="px-3 sm:px-4 py-2 bg-green-700 text-white font-bold rounded hover:bg-green-800 text-sm">
+            <button type="submit" class="px-3 sm:px-4 py-2 bg-brand-700 text-white font-bold rounded hover:bg-brand-800 text-sm">
               {t('createOrganization')}
             </button>
           </div>

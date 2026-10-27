@@ -42,7 +42,7 @@ export function AboutView() {
 
   return (
     <div class="max-w-3xl mx-auto">
-      <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-green-800">{t('aboutTitle')}</h2>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-brand-800">{t('aboutTitle')}</h2>
       <p class="text-gray-700 text-sm sm:text-base leading-relaxed mb-3">{t('aboutDescription')}</p>
       <p class="text-gray-600 text-sm leading-relaxed mb-8">{t('aboutDescriptionExtra')}</p>
 
@@ -56,11 +56,11 @@ export function AboutView() {
 
       <p class="text-sm text-gray-700 mb-1">
         <b>{t('mainSource')}:</b>{' '}
-        <a class="text-green-700 underline" href={AR.meta.mainSourceUrl} target="_blank" rel="noopener noreferrer">{AR.meta.mainSource}</a>
+        <a class="text-brand-700 underline" href={AR.meta.mainSourceUrl} target="_blank" rel="noopener noreferrer">{AR.meta.mainSource}</a>
       </p>
       <p class="text-sm text-gray-700 mb-6">
         <b>{t('transportSource')}:</b>{' '}
-        <a class="text-green-700 underline" href={AR.meta.transportSourceUrl} target="_blank" rel="noopener noreferrer">{AR.meta.transportSource}</a>
+        <a class="text-brand-700 underline" href={AR.meta.transportSourceUrl} target="_blank" rel="noopener noreferrer">{AR.meta.transportSource}</a>
       </p>
 
       <Table title={t('fuelsAndPower')}>

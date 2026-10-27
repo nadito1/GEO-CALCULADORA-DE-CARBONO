@@ -6,30 +6,40 @@ import { SettingsView } from './pages/SettingsView';
 import { AboutView } from './pages/AboutView';
 import { t } from './i18n';
 import logoPath from './assets/logo.png';
+import { BRAND_LOGO } from './config';
+import { SyncBadge } from './components/SyncBadge';
 
 function Navbar() {
   // A simple helper function to apply Tailwind classes based on the active view
   const navBtnClass = (view: string) => `
     px-3 py-1.5 rounded-md transition-colors text-sm font-medium flex items-center gap-2
     ${currentView.value === view 
-      ? 'bg-green-50 text-green-800' 
+      ? 'bg-brand-50 text-brand-700' 
       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}
   `;
 
   return (
-    <nav class="flex items-center justify-between p-4 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+    <nav class="flex items-center justify-between gap-2 px-3 sm:px-4 py-3 bg-white border-b-4 border-brand-700 shadow-sm sticky top-0 z-10">
       
       {/* Logo / Home Button */}
       <div 
         class="font-bold cursor-pointer flex items-center gap-2 text-lg hover:opacity-80 transition-opacity"
         onClick={() => selectOrganization(null)} // Clears active org and goes to 'orgs' view
       >
-        <img src={logoPath} alt="" class="h-8 w-8 rounded-lg" />
-        <span class="hidden sm:inline text-green-800">{t('appTitle')}</span>
+        {BRAND_LOGO ? (
+          <img src={`${import.meta.env.BASE_URL}${BRAND_LOGO}`} alt="Georgalos" class="h-8 w-auto" />
+        ) : (
+          <img src={logoPath} alt="" class="h-8 w-8 rounded-lg" />
+        )}
+        <span class="flex flex-col leading-tight">
+          {!BRAND_LOGO && <span class="text-brand-700 font-extrabold tracking-wide text-base">GEORGALOS</span>}
+          <span class="text-[10px] sm:text-xs font-semibold text-accent-600 uppercase tracking-wider whitespace-nowrap">{t('appSubtitle')}</span>
+        </span>
       </div>
 
       {/* Navigation Links */}
-      <div class="flex gap-1 sm:gap-2">
+      <div class="flex items-center gap-1 sm:gap-2">
+        <SyncBadge />
         {/* Only show Dashboard link if an organization is currently selected */}
         {activeOrgId.value && (
            <button 
@@ -80,7 +90,7 @@ function Footer() {
         <div class="flex items-center gap-4">
           <button 
             onClick={() => currentView.value = 'about'}
-            class="text-green-700 hover:text-green-900 font-medium transition-colors"
+            class="text-brand-700 hover:text-brand-900 font-medium transition-colors"
           >
             {t('about')}
           </button>

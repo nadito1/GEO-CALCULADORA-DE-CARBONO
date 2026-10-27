@@ -1,4 +1,4 @@
-# 🏭 GEO Calculadora de Carbono
+# 🏭 Georgalos · Huella de Carbono
 
 Web app instalable (PWA) para calcular la **huella de carbono de cada planta**, con desglose por alcance del GHG Protocol e indicador de intensidad (kg CO₂e por kg producido).
 
@@ -25,9 +25,15 @@ Traslados: `personas × km por trayecto × 2 × días × factor`. En autos el fa
 
 Todos los factores están en [`src/data/factors/ar.json`](src/data/factors/ar.json) con su fuente; para actualizarlos se edita solo ese archivo. La pestaña **Metodología** de la app los muestra en tablas.
 
-## Cómo se usan los datos
+## Registro central
 
-Cada dispositivo guarda sus datos localmente. Para consolidar todas las plantas: cada planta exporta su archivo desde **Configuración** y quien consolida los importa (las plantas nuevas se agregan, las existentes se actualizan).
+La app se conecta a una planilla de Google que funciona como registro: cada carga se guarda con fecha y usuario (hoja **Plantas** con el último estado y hoja **Historial** con todos los cambios), y todos ven los datos de todas las plantas. Funciona sin conexión y sincroniza cuando vuelve la señal. Puesta en marcha: [`registro/README.md`](registro/README.md).
+
+Sin registro conectado, los datos quedan en el dispositivo y se pueden exportar e importar desde **Configuración**.
+
+## Marca
+
+Paleta Georgalos definida en [`src/index.css`](src/index.css): violeta `#6A2C91`, rojo `#E2231A`, gris `#595959`. Para usar el logo oficial, copiá el archivo a `public/` (por ejemplo `public/georgalos-logo.png`) y poné su nombre en `BRAND_LOGO` dentro de [`src/config.ts`](src/config.ts). En ese mismo archivo, `REGISTRO_URL` deja fija la URL del registro para que nadie tenga que pegarla.
 
 ## Desarrollo
 

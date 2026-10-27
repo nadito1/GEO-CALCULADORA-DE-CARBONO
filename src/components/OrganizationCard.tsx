@@ -19,7 +19,7 @@ export function OrganizationCard({ org, onClick }: Props) {
       <div class="flex-1">
         <h3 class="m-0 text-lg font-bold text-gray-900">🏭 {org.name}</h3>
         {desc && <p class="m-0 text-sm text-gray-600 mt-1 line-clamp-2">{desc}</p>}
-        <p class="m-0 mt-3 text-xl font-bold text-red-700">{formatCO2(fp.total)}</p>
+        <p class="m-0 mt-3 text-xl font-bold text-accent-700">{formatCO2(fp.total)}</p>
         {fp.intensity !== null && (
           <p class="m-0 text-xs text-gray-600">{formatNumber(fp.intensity, 3)} kg CO₂e / kg {t('produced')}</p>
         )}

@@ -181,7 +181,7 @@ export const MODULE_CATALOG: Record<string, ModuleDef> = {
 };
 
 export const SCOPE_INFO: Record<Exclude<Scope, 0>, { label: string; short: string; desc: string; color: string }> = {
-  1: { label: 'Alcance 1', short: 'A1', desc: 'Emisiones directas: combustibles y refrigerantes', color: '#c2410c' },
-  2: { label: 'Alcance 2', short: 'A2', desc: 'Electricidad comprada', color: '#ca8a04' },
-  3: { label: 'Alcance 3', short: 'A3', desc: 'Traslados del personal, viajes y residuos', color: '#0e7490' },
+  1: { label: 'Alcance 1', short: 'A1', desc: 'Emisiones directas: combustibles y refrigerantes', color: '#e2231a' },
+  2: { label: 'Alcance 2', short: 'A2', desc: 'Electricidad comprada', color: '#6a2c91' },
+  3: { label: 'Alcance 3', short: 'A3', desc: 'Traslados del personal, viajes y residuos', color: '#595959' },
 };

@@ -57,7 +57,7 @@ export function StatisticsView() {
       {/* Total consolidado */}
       <div class="mb-6 p-4 sm:p-6 rounded-lg border border-gray-200 bg-white">
         <p class="m-0 text-xs sm:text-sm text-gray-600">{t('allPlantsTotal').replace('{n}', String(orgs.length))}</p>
-        <h3 class="m-0 mt-1 text-2xl sm:text-3xl font-bold text-red-700">{formatCO2(total.all)}</h3>
+        <h3 class="m-0 mt-1 text-2xl sm:text-3xl font-bold text-accent-700">{formatCO2(total.all)}</h3>
         <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-xs sm:text-sm">
           {([1, 2, 3] as const).map(s => (
             <span key={s} style={{ color: SCOPE_INFO[s].color }}>
@@ -105,7 +105,7 @@ export function StatisticsView() {
           <tbody>
             {rows.map(({ org, fp }) => (
               <tr key={org.id} class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => selectOrganization(org.id)}>
-                <td class="p-2 sm:p-3 font-medium text-green-800">{org.name}</td>
+                <td class="p-2 sm:p-3 font-medium text-brand-800">{org.name}</td>
                 <td class="p-2 sm:p-3 text-right">{formatNumber(toT(fp.byScope[1]))}</td>
                 <td class="p-2 sm:p-3 text-right">{formatNumber(toT(fp.byScope[2]))}</td>
                 <td class="p-2 sm:p-3 text-right">{formatNumber(toT(fp.byScope[3]))}</td>
@@ -144,8 +144,8 @@ export function StatisticsView() {
             <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} unit=" t" width={60} />
             <Tooltip formatter={(val: any) => `${formatNumber(Number(val))} t CO₂e`} cursor={{ fill: '#f3f4f6' }} />
             <Legend verticalAlign="top" wrapperStyle={{ fontSize: '12px' }} />
-            <Bar isAnimationActive={false} dataKey="p1" name={o1?.name || t('baselineOrg')} fill="#15803d" radius={[4, 4, 0, 0]} />
-            {o2 && <Bar isAnimationActive={false} dataKey="p2" name={o2.name} fill="#64748b" radius={[4, 4, 0, 0]} />}
+            <Bar isAnimationActive={false} dataKey="p1" name={o1?.name || t('baselineOrg')} fill="#6a2c91" radius={[4, 4, 0, 0]} />
+            {o2 && <Bar isAnimationActive={false} dataKey="p2" name={o2.name} fill="#a3a3a3" radius={[4, 4, 0, 0]} />}
           </BarChart>
         </ResponsiveContainer>
       </div>

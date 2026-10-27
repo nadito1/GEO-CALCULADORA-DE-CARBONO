@@ -40,7 +40,7 @@ export function OrganizationsView() {
               />
               <button
                 onClick={() => deletingOrgId.value = org.id}
-                class="absolute top-2 right-2 p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                class="absolute top-2 right-2 p-2 text-accent-600 hover:bg-accent-50 rounded transition-colors"
                 title={t('deleteOrgTitle')}
               >
                 🗑️
@@ -54,7 +54,7 @@ export function OrganizationsView() {
       <div class="flex justify-center mt-12">
         <button 
           onClick={() => showAddModal.value = true}
-          class="px-6 sm:px-8 py-2 sm:py-3 bg-green-700 text-white font-bold rounded-lg hover:bg-green-800 transition-colors shadow-lg text-sm sm:text-lg flex items-center gap-2"
+          class="px-6 sm:px-8 py-2 sm:py-3 bg-brand-700 text-white font-bold rounded-lg hover:bg-brand-800 transition-colors shadow-lg text-sm sm:text-lg flex items-center gap-2"
         >
           ➕ {t('addOrganization')}
         </button>

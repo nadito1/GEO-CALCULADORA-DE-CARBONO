@@ -34,8 +34,8 @@ export function ConfirmationModal({
             onClick={onConfirm} 
             class={`px-4 py-2 text-white font-bold rounded ${
               isDelete 
-                ? 'bg-red-600 hover:bg-red-700' 
-                : 'bg-green-700 hover:bg-green-800'
+                ? 'bg-accent-600 hover:bg-accent-700' 
+                : 'bg-brand-700 hover:bg-brand-800'
             }`}
           >
             {confirmText}

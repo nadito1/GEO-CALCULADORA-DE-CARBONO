@@ -9,7 +9,7 @@ interface Props {
   onSubChange: (id: string, v: number) => void;
 }
 
-const inputClass = 'p-1.5 border border-gray-300 rounded text-right text-sm focus:ring-2 focus:ring-green-500';
+const inputClass = 'p-1.5 border border-gray-300 rounded text-right text-sm focus:ring-2 focus:ring-brand-500';
 
 const toNumber = (raw: string) => {
   const n = Number(raw.replace(',', '.'));
@@ -26,7 +26,7 @@ export function ModuleFields({ def, mainValue, subValues, onMainChange, onSubCha
           type="number" min="0" step="any" inputMode="decimal"
           value={mainValue}
           onInput={(e) => onMainChange(toNumber((e.target as HTMLInputElement).value))}
-          class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm"
+          class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brand-500 text-sm"
           placeholder={t('enterValue')}
         />
       </div>

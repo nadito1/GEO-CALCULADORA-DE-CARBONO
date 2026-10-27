@@ -4,7 +4,7 @@ import { normalizeCountry, type CountryCode } from "./data/factors";
 
 const STORAGE_KEY = "geo-carbono-plantas";
 
-/** Limpia datos leídos de disco o de un archivo importado. */
+/** Limpia datos leídos de disco, del registro central o de un archivo importado. */
 export function sanitizeOrganizations(data: unknown): Organization[] {
   if (!Array.isArray(data)) return [];
   return data
@@ -17,7 +17,6 @@ export function sanitizeOrganizations(data: unknown): Organization[] {
     }));
 }
 
-// 1. Load from LocalStorage
 function loadInitial(): Organization[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -26,14 +25,11 @@ function loadInitial(): Organization[] {
     return [];
   }
 }
-const initialOrgs: Organization[] = loadInitial();
 
-// 2. Define Signals
-export const organizations = signal<Organization[]>(initialOrgs);
+export const organizations = signal<Organization[]>(loadInitial());
 export const activeOrgId = signal<string | null>(null);
 export const currentView = signal<"orgs" | "dashboard" | "settings" | "stats" | "about">("orgs");
 
-// 3. Auto-save to LocalStorage whenever 'organizations' changes
 effect(() => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(organizations.value));
@@ -42,21 +38,43 @@ effect(() => {
   }
 });
 
-// 4. Computed Helpers
-export const activeOrg = computed(() => 
+export const activeOrg = computed(() =>
   organizations.value.find(o => o.id === activeOrgId.value) || null
 );
 
-// 5. Actions
+// --- Aviso de cambios (lo usa la sincronización con el registro central) ---
+type ChangeListener = (orgId: string, deleted: boolean) => void;
+const listeners: ChangeListener[] = [];
+export function onOrganizationChange(fn: ChangeListener) {
+  listeners.push(fn);
+}
+function notify(orgId: string, deleted = false) {
+  listeners.forEach(fn => fn(orgId, deleted));
+}
+
+/** Aplica un cambio a una planta, le pone fecha de actualización y avisa. */
+function mutateOrg(orgId: string, fn: (org: Organization) => Organization) {
+  let changed = false;
+  organizations.value = organizations.value.map(org => {
+    if (org.id !== orgId) return org;
+    changed = true;
+    return { ...fn(org), updatedAt: new Date().toISOString() };
+  });
+  if (changed) notify(orgId);
+}
+
+// --- Acciones ---
 export function addOrganization(name: string, description: string, country: CountryCode) {
-  const newOrg: Organization = { 
-    id: crypto.randomUUID(), 
-    name, 
+  const newOrg: Organization = {
+    id: crypto.randomUUID(),
+    name,
     description,
-    country, 
-    modules: [] 
+    country,
+    modules: [],
+    updatedAt: new Date().toISOString(),
   };
   organizations.value = [...organizations.value, newOrg];
+  notify(newOrg.id);
 }
 
 export function selectOrganization(id: string | null) {
@@ -64,112 +82,62 @@ export function selectOrganization(id: string | null) {
   currentView.value = id ? "dashboard" : "orgs";
 }
 
-export function addModuleInstance(defId: string) {
-  const currentOrgId = activeOrgId.value;
-  if (!currentOrgId) return;
-
-  // We update the signal immutably so the UI knows to re-render
-  organizations.value = organizations.value.map(org => {
-    if (org.id === currentOrgId) {
-      return {
-        ...org,
-        modules: [
-          ...org.modules,
-          { id: crypto.randomUUID(), defId, value: 0, submoduleValues: {} }
-        ]
-      };
-    }
-    return org;
-  });
-}
-
 export function addModuleInstanceWithValues(defId: string, value: number, submoduleValues?: Record<string, number>) {
-  const currentOrgId = activeOrgId.value;
-  if (!currentOrgId) return;
-
-  // We update the signal immutably so the UI knows to re-render
-  organizations.value = organizations.value.map(org => {
-    if (org.id === currentOrgId) {
-      return {
-        ...org,
-        modules: [
-          ...org.modules,
-          { id: crypto.randomUUID(), defId, value, submoduleValues: submoduleValues || {} }
-        ]
-      };
-    }
-    return org;
-  });
-}
-
-export function updateModuleValue(moduleId: string, newValue: number) {
-  const currentOrgId = activeOrgId.value;
-  if (!currentOrgId) return;
-
-  organizations.value = organizations.value.map(org => {
-    if (org.id === currentOrgId) {
-      return {
-        ...org,
-        modules: org.modules.map(mod => 
-          mod.id === moduleId ? { ...mod, value: newValue } : mod
-        )
-      };
-    }
-    return org;
-  });
+  const orgId = activeOrgId.value;
+  if (!orgId) return;
+  mutateOrg(orgId, org => ({
+    ...org,
+    modules: [...org.modules, { id: crypto.randomUUID(), defId, value, submoduleValues: submoduleValues || {} }],
+  }));
 }
 
 export function updateModuleInstance(updatedModule: ModuleInstance) {
-  const currentOrgId = activeOrgId.value;
-  if (!currentOrgId) return;
-
-  organizations.value = organizations.value.map(org => {
-    if (org.id === currentOrgId) {
-      return {
-        ...org,
-        modules: org.modules.map(mod => mod.id === updatedModule.id ? updatedModule : mod)
-      };
-    }
-    return org;
-  });
+  const orgId = activeOrgId.value;
+  if (!orgId) return;
+  mutateOrg(orgId, org => ({
+    ...org,
+    modules: org.modules.map(mod => (mod.id === updatedModule.id ? updatedModule : mod)),
+  }));
 }
 
 export function deleteModuleInstance(moduleId: string) {
-  const currentOrgId = activeOrgId.value;
-  if (!currentOrgId) return;
+  const orgId = activeOrgId.value;
+  if (!orgId) return;
+  mutateOrg(orgId, org => ({ ...org, modules: org.modules.filter(mod => mod.id !== moduleId) }));
+}
 
-  organizations.value = organizations.value.map(org => {
-    if (org.id === currentOrgId) {
-      return {
-        ...org,
-        modules: org.modules.filter(mod => mod.id !== moduleId)
-      };
-    }
-    return org;
-  });
+/** Marca una planta como sincronizada sin disparar un nuevo envío. */
+export function markSynced(orgId: string, at: string) {
+  organizations.value = organizations.value.map(o => (o.id === orgId ? { ...o, syncedAt: at } : o));
+}
+
+/** Reemplaza el listado completo (lo usa la sincronización al traer datos del registro). */
+export function replaceOrganizations(list: Organization[]) {
+  organizations.value = list;
+  if (activeOrgId.value && !list.some(o => o.id === activeOrgId.value)) selectOrganization(null);
 }
 
 /**
  * Importa plantas desde un respaldo: las que tienen el mismo id se reemplazan,
  * las nuevas se agregan. Así se pueden consolidar archivos de varias plantas.
- * Devuelve cuántas plantas se agregaron y cuántas se actualizaron.
  */
 export function mergeOrganizations(imported: Organization[]): { added: number; updated: number } {
   const byId = new Map(organizations.value.map(o => [o.id, o]));
   let added = 0;
   let updated = 0;
+  const now = new Date().toISOString();
   for (const org of imported) {
     if (byId.has(org.id)) updated++;
     else added++;
-    byId.set(org.id, org);
+    byId.set(org.id, { ...org, updatedAt: now, syncedAt: undefined });
   }
   organizations.value = [...byId.values()];
+  imported.forEach(o => notify(o.id));
   return { added, updated };
 }
 
 export function deleteOrganization(id: string) {
   organizations.value = organizations.value.filter(org => org.id !== id);
-  if (activeOrgId.value === id) {
-    selectOrganization(null);
-  }
+  if (activeOrgId.value === id) selectOrganization(null);
+  notify(id, true);
 }

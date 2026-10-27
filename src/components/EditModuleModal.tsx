@@ -38,7 +38,7 @@ export function EditModuleModal({ moduleInstance, onClose, onSave }: Props) {
 
         <div class="flex justify-end gap-2 sm:gap-3 mt-8">
           <button onClick={onClose} class="px-3 sm:px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-medium text-sm">{t('cancel')}</button>
-          <button onClick={handleSave} class="px-3 sm:px-4 py-2 bg-green-700 text-white font-bold rounded hover:bg-green-800 text-sm">
+          <button onClick={handleSave} class="px-3 sm:px-4 py-2 bg-brand-700 text-white font-bold rounded hover:bg-brand-800 text-sm">
             {t('saveChanges')}
           </button>
         </div>

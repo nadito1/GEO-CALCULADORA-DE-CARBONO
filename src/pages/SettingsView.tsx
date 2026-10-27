@@ -1,6 +1,59 @@
 import { currentLang, t } from '../i18n';
 import type { Language } from '../i18n';
+import { useState } from 'preact/hooks';
 import { organizations, mergeOrganizations, sanitizeOrganizations } from '../store';
+import { syncConfig, saveSyncConfig, syncState, syncNow, isConfigured } from '../sync';
+
+function RegistroSection() {
+  const [url, setUrl] = useState(syncConfig.value.url);
+  const [code, setCode] = useState(syncConfig.value.code);
+  const [user, setUser] = useState(syncConfig.value.user);
+  const s = syncState.value;
+  const input = 'w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brand-500 text-sm';
+
+  return (
+    <div class="mb-6 sm:mb-8 p-4 sm:p-6 border-2 border-brand-200 rounded-lg bg-white mx-4">
+      <h3 class="mt-0 mb-2 text-base sm:text-lg font-bold text-brand-700">☁️ {t('registroTitle')}</h3>
+      <p class="text-gray-600 text-xs sm:text-sm mb-4">{t('registroDesc')}</p>
+      <form
+        class="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          saveSyncConfig({ url, code, user });
+        }}
+      >
+        <div>
+          <label class="block text-xs sm:text-sm font-bold mb-1">{t('registroUrl')}</label>
+          <input type="url" value={url} onInput={(e) => setUrl((e.target as HTMLInputElement).value)} placeholder="https://script.google.com/macros/s/…/exec" class={input} />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs sm:text-sm font-bold mb-1">{t('registroCode')}</label>
+            <input type="password" value={code} onInput={(e) => setCode((e.target as HTMLInputElement).value)} class={input} autoComplete="off" />
+          </div>
+          <div>
+            <label class="block text-xs sm:text-sm font-bold mb-1">{t('registroUser')}</label>
+            <input type="text" value={user} onInput={(e) => setUser((e.target as HTMLInputElement).value)} placeholder={t('registroUserPlaceholder')} class={input} />
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button type="submit" class="px-4 py-2 rounded text-white bg-brand-700 hover:bg-brand-800 font-bold text-sm">{t('registroSave')}</button>
+          {isConfigured() && (
+            <button type="button" onClick={() => void syncNow()} class="px-4 py-2 rounded border border-brand-700 text-brand-700 hover:bg-brand-50 font-medium text-sm">
+              {t('registroSyncNow')}
+            </button>
+          )}
+          <span class={`text-xs ${s.state === 'error' ? 'text-accent-700' : 'text-gray-600'}`}>
+            {s.state === 'off' && t('registroStatusOff')}
+            {s.state === 'syncing' && t('syncing')}
+            {s.state === 'ok' && `${t('syncOk')} · ${s.last ? new Date(s.last).toLocaleTimeString('es-AR') : ''}`}
+            {s.state === 'error' && `${t('syncError')}: ${s.message}`}
+          </span>
+        </div>
+      </form>
+    </div>
+  );
+}
 
 export function SettingsView() {
   
@@ -49,6 +102,8 @@ export function SettingsView() {
   return (
     <div>
       <h2 class="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-900">⚙️ {t('settings')}</h2>
+
+      <RegistroSection />
 
       {/* --- LANGUAGE SELECTOR --- */}
       <div class="mb-6 sm:mb-8 p-4 sm:p-6 border border-gray-200 rounded-lg bg-white mx-4">

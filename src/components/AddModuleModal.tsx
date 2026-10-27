@@ -41,7 +41,7 @@ export function AddModuleModal({ onClose, onConfirm }: Props) {
               setMainValue(0);
               setSubValues(defaultSubValues(MODULE_CATALOG[id]));
             }}
-            class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 text-sm"
+            class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-brand-500 text-sm"
           >
             {scopes.map(scope => (
               <optgroup key={scope} label={scopeLabel(scope)}>
@@ -68,7 +68,7 @@ export function AddModuleModal({ onClose, onConfirm }: Props) {
           <button onClick={onClose} class="px-3 sm:px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-medium text-sm">
             {t('cancel')}
           </button>
-          <button onClick={handleAdd} class="px-3 sm:px-4 py-2 bg-green-700 text-white font-bold rounded hover:bg-green-800 text-sm">
+          <button onClick={handleAdd} class="px-3 sm:px-4 py-2 bg-brand-700 text-white font-bold rounded hover:bg-brand-800 text-sm">
             {t('addModuleBtn')}
           </button>
         </div>
