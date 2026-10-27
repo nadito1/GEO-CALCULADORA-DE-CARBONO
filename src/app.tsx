@@ -27,7 +27,7 @@ function Navbar() {
         onClick={() => selectOrganization(null)} // Clears active org and goes to 'orgs' view
       >
         {BRAND_LOGO ? (
-          <img src={`${import.meta.env.BASE_URL}${BRAND_LOGO}`} alt="Georgalos" class="h-8 w-auto" />
+          <img src={`${import.meta.env.BASE_URL}${BRAND_LOGO}`} alt="Georgalos" class="h-9 sm:h-10 w-auto" />
         ) : (
           <img src={logoPath} alt="" class="h-8 w-8 rounded-lg" />
         )}

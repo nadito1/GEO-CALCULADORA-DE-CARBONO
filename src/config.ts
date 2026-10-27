@@ -7,5 +7,5 @@
  * REGISTRO_URL: URL del Web App de Google Apps Script que guarda los datos en la planilla
  *   (ver registro/README.md). Si está vacío, cada usuario puede pegarla en Configuración.
  */
-export const BRAND_LOGO = '';
+export const BRAND_LOGO = 'georgalos-logo.png';
 export const REGISTRO_URL = '';

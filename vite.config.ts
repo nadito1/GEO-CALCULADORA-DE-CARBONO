@@ -12,7 +12,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'logo.svg', 'icon-192.png', 'icon-512.png'],
+      includeAssets: ['favicon.ico', 'logo.svg', 'icon-192.png', 'icon-512.png', 'georgalos-logo.png'],
       manifest: {
         name: 'Georgalos · Huella de Carbono',
         short_name: 'Huella Georgalos',
