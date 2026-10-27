@@ -1,10 +1,32 @@
 import { signal, computed, effect } from "@preact/signals";
 import type { Organization, ModuleInstance } from "./types";
-import type { CountryCode } from "./data/factors";
+import { normalizeCountry, type CountryCode } from "./data/factors";
+
+const STORAGE_KEY = "geo-carbono-plantas";
+
+/** Limpia datos leídos de disco o de un archivo importado. */
+export function sanitizeOrganizations(data: unknown): Organization[] {
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter((o): o is Organization => !!o && typeof o === "object" && typeof (o as Organization).id === "string")
+    .map(o => ({
+      ...o,
+      name: String(o.name || "Planta sin nombre"),
+      country: normalizeCountry(o.country),
+      modules: Array.isArray(o.modules) ? o.modules : [],
+    }));
+}
 
 // 1. Load from LocalStorage
-const savedData = localStorage.getItem("carbon-app-data");
-const initialOrgs: Organization[] = savedData ? JSON.parse(savedData) : [];
+function loadInitial(): Organization[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? sanitizeOrganizations(JSON.parse(saved)) : [];
+  } catch {
+    return [];
+  }
+}
+const initialOrgs: Organization[] = loadInitial();
 
 // 2. Define Signals
 export const organizations = signal<Organization[]>(initialOrgs);
@@ -13,7 +35,11 @@ export const currentView = signal<"orgs" | "dashboard" | "settings" | "stats" | 
 
 // 3. Auto-save to LocalStorage whenever 'organizations' changes
 effect(() => {
-  localStorage.setItem("carbon-app-data", JSON.stringify(organizations.value));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(organizations.value));
+  } catch {
+    // Sin almacenamiento disponible (modo privado): la app sigue funcionando en memoria.
+  }
 });
 
 // 4. Computed Helpers
@@ -121,6 +147,24 @@ export function deleteModuleInstance(moduleId: string) {
     }
     return org;
   });
+}
+
+/**
+ * Importa plantas desde un respaldo: las que tienen el mismo id se reemplazan,
+ * las nuevas se agregan. Así se pueden consolidar archivos de varias plantas.
+ * Devuelve cuántas plantas se agregaron y cuántas se actualizaron.
+ */
+export function mergeOrganizations(imported: Organization[]): { added: number; updated: number } {
+  const byId = new Map(organizations.value.map(o => [o.id, o]));
+  let added = 0;
+  let updated = 0;
+  for (const org of imported) {
+    if (byId.has(org.id)) updated++;
+    else added++;
+    byId.set(org.id, org);
+  }
+  organizations.value = [...byId.values()];
+  return { added, updated };
 }
 
 export function deleteOrganization(id: string) {

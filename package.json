@@ -1,5 +1,5 @@
 {
-  "name": "carbon-calculator",
+  "name": "geo-calculadora-de-carbono",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,7 +12,7 @@
     "@preact/signals": "^2.8.2",
     "@tailwindcss/vite": "^4.2.2",
     "preact": "^10.29.0",
-    "recharts": "^3.8.0",
+    "recharts": "^2.15.4",
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {

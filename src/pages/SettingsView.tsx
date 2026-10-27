@@ -1,6 +1,6 @@
 import { currentLang, t } from '../i18n';
 import type { Language } from '../i18n';
-import { organizations } from '../store';
+import { organizations, mergeOrganizations, sanitizeOrganizations } from '../store';
 
 export function SettingsView() {
   
@@ -14,7 +14,7 @@ export function SettingsView() {
     // 3. Create a temporary anchor tag to trigger the download
     const link = document.createElement('a');
     link.href = url;
-    link.download = `carbon_backup_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `huella_plantas_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -30,16 +30,16 @@ export function SettingsView() {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const importedData = JSON.parse(event.target?.result as string);
-        // Basic validation: check if it's an array
-        if (Array.isArray(importedData)) {
-          organizations.value = importedData;
-          alert("Data imported successfully!");
+        const parsed = JSON.parse(event.target?.result as string);
+        const imported = sanitizeOrganizations(parsed);
+        if (Array.isArray(parsed) && imported.length > 0) {
+          const { added, updated } = mergeOrganizations(imported);
+          alert(t('importResult').replace('{added}', String(added)).replace('{updated}', String(updated)));
         } else {
-          alert("Invalid backup file format.");
+          alert(t('importInvalid'));
         }
       } catch (err) {
-        alert("Error reading the file. Is it a valid JSON?");
+        alert(t('importError'));
       }
       input.value = ""; // Reset the input
     };
@@ -58,11 +58,8 @@ export function SettingsView() {
           onChange={(e) => currentLang.value = (e.target as HTMLSelectElement).value as Language}
           class="w-full sm:max-w-xs p-2 border border-gray-300 rounded text-sm"
         >
-          <option value="en">English</option>
-          <option value="de">Deutsch</option>
-          <option value="it">Italiano</option>
           <option value="es">Español</option>
-          <option value="sv">Svenska</option>
+          <option value="en">English</option>
         </select>
       </div>
 
