@@ -84,10 +84,15 @@ export function SettingsView() {
     reader.onload = (event) => {
       try {
         const parsed = JSON.parse(event.target?.result as string);
-        const imported = sanitizeOrganizations(parsed);
-        if (Array.isArray(parsed) && imported.length > 0) {
-          const { added, updated } = mergeOrganizations(imported);
-          alert(t('importResult').replace('{added}', String(added)).replace('{updated}', String(updated)));
+        // Formato simple: lista de plantas. Formato de carga masiva: { plants: [...], remove: [ids] }.
+        const list = Array.isArray(parsed) ? parsed : parsed?.plants;
+        const remove: string[] = Array.isArray(parsed?.remove) ? parsed.remove.map(String) : [];
+        const imported = sanitizeOrganizations(list);
+        if (imported.length > 0) {
+          const { added, updated, removed } = mergeOrganizations(imported, remove);
+          let msg = t('importResult').replace('{added}', String(added)).replace('{updated}', String(updated));
+          if (removed > 0) msg += ' ' + t('importRemoved').replace('{removed}', String(removed));
+          alert(msg);
         } else {
           alert(t('importInvalid'));
         }

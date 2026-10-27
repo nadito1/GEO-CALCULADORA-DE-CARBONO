@@ -2,26 +2,31 @@ import { useState } from 'preact/hooks';
 import { MODULE_CATALOG, SCOPE_INFO } from '../data/moduleCatalog';
 import type { ModuleInstance, Scope } from '../types';
 import { ModuleFields, defaultSubValues } from './ModuleFields';
+import { PeriodPicker } from './PeriodPicker';
+import { currentPeriod } from '../data/footprint';
 import { t } from '../i18n';
 
 interface Props {
   onClose: () => void;
   onConfirm: (moduleInstance: ModuleInstance) => void;
+  /** Mes propuesto (el que se está viendo en la planta). */
+  defaultPeriod?: string;
 }
 
 const scopeLabel = (s: Scope) => (s === 0 ? 'Datos de producción' : `${SCOPE_INFO[s].label} – ${SCOPE_INFO[s].desc}`);
 
-export function AddModuleModal({ onClose, onConfirm }: Props) {
+export function AddModuleModal({ onClose, onConfirm, defaultPeriod }: Props) {
   const firstId = Object.keys(MODULE_CATALOG)[0];
   const [selectedDefId, setSelectedDefId] = useState(firstId);
   const [mainValue, setMainValue] = useState(0);
   const [subValues, setSubValues] = useState<Record<string, number>>(defaultSubValues(MODULE_CATALOG[firstId]));
 
+  const [period, setPeriod] = useState(defaultPeriod && defaultPeriod.length === 7 ? defaultPeriod : currentPeriod());
   const def = MODULE_CATALOG[selectedDefId];
   const scopes: Scope[] = [1, 2, 3, 0];
 
   const handleAdd = () => {
-    onConfirm({ id: crypto.randomUUID(), defId: selectedDefId, value: mainValue, submoduleValues: subValues });
+    onConfirm({ id: crypto.randomUUID(), defId: selectedDefId, value: mainValue, submoduleValues: subValues, period });
     onClose();
   };
 
@@ -30,6 +35,8 @@ export function AddModuleModal({ onClose, onConfirm }: Props) {
       <div class="bg-white rounded-lg p-4 sm:p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
         <h2 class="text-lg sm:text-xl font-bold mb-2">{t('addModule')}</h2>
         <p class="text-gray-600 text-xs sm:text-sm mb-6">{t('selectModuleDesc')}</p>
+
+        <PeriodPicker label={t('periodLabel')} value={period} onChange={setPeriod} />
 
         <div class="mb-4">
           <label class="block text-xs sm:text-sm font-bold mb-2">{t('selectModuleType')}</label>

@@ -29,6 +29,8 @@ function loadInitial(): Organization[] {
 export const organizations = signal<Organization[]>(loadInitial());
 export const activeOrgId = signal<string | null>(null);
 export const currentView = signal<"orgs" | "dashboard" | "settings" | "stats" | "about">("orgs");
+/** Período que se está viendo: "" (todo), "AAAA" o "AAAA-MM". Compartido entre la planta y el resumen. */
+export const periodFilter = signal<string>("");
 
 effect(() => {
   try {
@@ -82,12 +84,12 @@ export function selectOrganization(id: string | null) {
   currentView.value = id ? "dashboard" : "orgs";
 }
 
-export function addModuleInstanceWithValues(defId: string, value: number, submoduleValues?: Record<string, number>) {
+export function addModuleInstanceWithValues(defId: string, value: number, submoduleValues?: Record<string, number>, period?: string) {
   const orgId = activeOrgId.value;
   if (!orgId) return;
   mutateOrg(orgId, org => ({
     ...org,
-    modules: [...org.modules, { id: crypto.randomUUID(), defId, value, submoduleValues: submoduleValues || {} }],
+    modules: [...org.modules, { id: crypto.randomUUID(), defId, value, submoduleValues: submoduleValues || {}, period }],
   }));
 }
 
@@ -118,22 +120,37 @@ export function replaceOrganizations(list: Organization[]) {
 }
 
 /**
- * Importa plantas desde un respaldo: las que tienen el mismo id se reemplazan,
- * las nuevas se agregan. Así se pueden consolidar archivos de varias plantas.
+ * Importa plantas desde un respaldo o archivo de carga masiva.
+ * - Plantas nuevas: se agregan.
+ * - Plantas existentes (mismo id): se combinan las cargas; una carga con el mismo id se reemplaza,
+ *   las demás que ya tenía la planta se conservan.
+ * - `removeIds`: plantas a eliminar (por ejemplo, fichas viejas que se reemplazan).
  */
-export function mergeOrganizations(imported: Organization[]): { added: number; updated: number } {
+export function mergeOrganizations(imported: Organization[], removeIds: string[] = []): { added: number; updated: number; removed: number } {
   const byId = new Map(organizations.value.map(o => [o.id, o]));
   let added = 0;
   let updated = 0;
   const now = new Date().toISOString();
   for (const org of imported) {
-    if (byId.has(org.id)) updated++;
-    else added++;
-    byId.set(org.id, { ...org, updatedAt: now, syncedAt: undefined });
+    const prev = byId.get(org.id);
+    if (prev) {
+      updated++;
+      const mods = new Map(prev.modules.map(m => [m.id, m]));
+      org.modules.forEach(m => mods.set(m.id, m));
+      byId.set(org.id, { ...prev, name: org.name, description: org.description ?? prev.description, modules: [...mods.values()], updatedAt: now });
+    } else {
+      added++;
+      byId.set(org.id, { ...org, updatedAt: now, syncedAt: undefined });
+    }
   }
+  // Las bajas se avisan aunque la planta no esté en este dispositivo, así se borran también del registro central.
+  const toRemove = removeIds.filter(id => !imported.some(o => o.id === id));
+  const removedHere = toRemove.filter(id => byId.delete(id)).length;
   organizations.value = [...byId.values()];
+  if (activeOrgId.value && toRemove.includes(activeOrgId.value)) selectOrganization(null);
   imported.forEach(o => notify(o.id));
-  return { added, updated };
+  toRemove.forEach(id => notify(id, true));
+  return { added, updated, removed: removedHere };
 }
 
 export function deleteOrganization(id: string) {

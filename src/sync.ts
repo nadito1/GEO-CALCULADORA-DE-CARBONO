@@ -132,14 +132,24 @@ function setPendingDeletes(list: { id: string; name: string }[]) {
 
 // ---------- Sincronización completa ----------
 let running: Promise<void> | null = null;
+let again = false;
 
 export function syncNow(): Promise<void> {
   if (!isConfigured()) {
     syncState.value = { state: 'off' };
     return Promise.resolve();
   }
-  if (running) return running;
-  running = doSync().finally(() => {
+  if (running) {
+    // Ya hay una sincronización en curso: se repite al terminar para tomar los cambios nuevos.
+    again = true;
+    return running;
+  }
+  running = (async () => {
+    do {
+      again = false;
+      await doSync();
+    } while (again && syncState.value.state !== 'error');
+  })().finally(() => {
     running = null;
   });
   return running;
@@ -148,17 +158,18 @@ export function syncNow(): Promise<void> {
 async function doSync() {
   syncState.value = { ...syncState.value, state: 'syncing' };
   try {
-    // 1. Bajas pendientes
-    const deletes = pendingDeletes();
-    for (const d of deletes) {
-      await call({ action: 'delete', id: d.id, name: d.name });
+    // 1. Bajas pendientes (se sacan de la lista de a una, así no se pierde ninguna que llegue mientras tanto)
+    let next: { id: string; name: string } | undefined;
+    while ((next = pendingDeletes()[0])) {
+      await call({ action: 'delete', id: next.id, name: next.name });
+      const done = next.id;
+      setPendingDeletes(pendingDeletes().filter(d => d.id !== done));
     }
-    setPendingDeletes([]);
-    const deletedIds = new Set(deletes.map(d => d.id));
 
-    // 2. Traer todo del registro
+    // 2. Traer todo del registro (sin lo que esté pendiente de baja)
     const data = await call(null);
-    const remote = sanitizeOrganizations(data.plants || []).filter(o => !deletedIds.has(o.id));
+    const stillDeleting = new Set(pendingDeletes().map(d => d.id));
+    const remote = sanitizeOrganizations(data.plants || []).filter(o => !stillDeleting.has(o.id));
     const remoteById = new Map(remote.map(o => [o.id, o]));
     const now = new Date().toISOString();
 
@@ -206,6 +217,16 @@ async function doSync() {
 
 // ---------- Envío automático de cambios ----------
 const timers = new Map<string, ReturnType<typeof setTimeout>>();
+let syncSoon: ReturnType<typeof setTimeout> | null = null;
+
+/** Agrupa varios avisos seguidos (por ejemplo, muchas bajas de una importación) en una sola sincronización. */
+function scheduleSync() {
+  if (syncSoon) clearTimeout(syncSoon);
+  syncSoon = setTimeout(() => {
+    syncSoon = null;
+    void syncNow();
+  }, 300);
+}
 
 onOrganizationChange((orgId, deleted) => {
   if (deleted) {
@@ -216,7 +237,7 @@ onOrganizationChange((orgId, deleted) => {
     const list = pendingDeletes().filter(d => d.id !== orgId);
     list.push({ id: orgId, name: '' });
     setPendingDeletes(list);
-    void syncNow();
+    scheduleSync();
     return;
   }
   if (!isConfigured()) return;

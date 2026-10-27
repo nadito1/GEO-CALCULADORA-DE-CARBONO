@@ -1,5 +1,6 @@
 import { useSignal } from '@preact/signals';
-import { organizations, addOrganization, selectOrganization, deleteOrganization } from '../store';
+import { organizations, addOrganization, selectOrganization, deleteOrganization, periodFilter } from '../store';
+import { PeriodFilter } from '../components/PeriodFilter';
 import { OrganizationCard } from '../components/OrganizationCard';
 import { AddOrganizationModal } from '../components/AddOrganizationModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
@@ -24,7 +25,12 @@ export function OrganizationsView() {
 
   return (
     <div>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-8 text-gray-900">🏭 {t('yourOrganizations')}</h2>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">🏭 {t('yourOrganizations')}</h2>
+      {organizations.value.length > 0 && (
+        <div class="mb-6">
+          <PeriodFilter orgs={organizations.value} value={periodFilter.value} onChange={(v) => (periodFilter.value = v)} />
+        </div>
+      )}
       
       {organizations.value.length === 0 ? (
         <div class="text-center py-12">

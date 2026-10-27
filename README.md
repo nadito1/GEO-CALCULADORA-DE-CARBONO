@@ -2,6 +2,8 @@
 
 Web app instalable (PWA) para calcular la **huella de carbono de cada planta**, con desglose por alcance del GHG Protocol e indicador de intensidad (kg CO₂e por kg producido).
 
+Cada planta tiene una sola ficha y cada carga indica su **mes**: se puede ver un mes, un año o todo el período, con la evolución mensual por alcance. La importación (Configuración → Importar datos) combina cargas en plantas existentes y acepta el formato `{ "plants": [...], "remove": [ids] }` para reemplazar fichas viejas.
+
 ## Qué calcula
 
 | Alcance | Fuente | Dato a cargar |

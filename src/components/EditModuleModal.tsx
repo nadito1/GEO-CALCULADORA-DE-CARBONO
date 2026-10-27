@@ -2,6 +2,8 @@ import { useState } from 'preact/hooks';
 import type { ModuleInstance } from '../types';
 import { MODULE_CATALOG } from '../data/moduleCatalog';
 import { ModuleFields } from './ModuleFields';
+import { PeriodPicker } from './PeriodPicker';
+import { currentPeriod } from '../data/footprint';
 import { t } from '../i18n';
 
 interface Props {
@@ -15,10 +17,12 @@ export function EditModuleModal({ moduleInstance, onClose, onSave }: Props) {
   const [mainValue, setMainValue] = useState(moduleInstance.value);
   const [subValues, setSubValues] = useState<Record<string, number>>(moduleInstance.submoduleValues || {});
 
+  const [period, setPeriod] = useState(moduleInstance.period || currentPeriod());
+
   if (!def) return null;
 
   const handleSave = () => {
-    onSave({ ...moduleInstance, value: mainValue, submoduleValues: subValues });
+    onSave({ ...moduleInstance, value: mainValue, submoduleValues: subValues, period });
     onClose();
   };
 
@@ -27,6 +31,8 @@ export function EditModuleModal({ moduleInstance, onClose, onSave }: Props) {
       <div class="bg-white rounded-lg p-4 sm:p-6 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
         <h2 class="text-lg sm:text-xl font-bold mb-2">{def.icon} {def.title}</h2>
         <p class="text-gray-600 text-xs sm:text-sm mb-6">{def.description}</p>
+
+        <PeriodPicker label={t('periodLabel')} value={period} onChange={setPeriod} />
 
         <ModuleFields
           def={def}

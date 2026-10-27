@@ -1,6 +1,6 @@
 import type { ModuleInstance, Organization } from '../types';
 import { MODULE_CATALOG, SCOPE_INFO } from '../data/moduleCatalog';
-import { moduleCO2, formatCO2, formatNumber } from '../data/footprint';
+import { moduleCO2, formatCO2, formatNumber, formatPeriod } from '../data/footprint';
 import { t } from '../i18n';
 
 interface Props {
@@ -27,6 +27,7 @@ export function ModuleCard({ moduleInstance, org, onEdit, onDelete }: Props) {
           <div class="text-2xl sm:text-3xl flex-shrink-0">{def.icon}</div>
           <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-800 text-white">📅 {formatPeriod(moduleInstance.period)}</span>
               <h3 class="m-0 text-base sm:text-lg font-bold text-gray-900">{def.title}</h3>
               {scope && (
                 <span class="text-[11px] font-bold px-2 py-0.5 rounded-full text-white" style={{ background: scope.color }}>

@@ -40,9 +40,11 @@ export interface ModuleInstance {
   defId: string;
   value: number;
   submoduleValues?: Record<string, number>;
+  /** Mes al que corresponde la carga, formato "AAAA-MM". Sin período = dato sin mes asignado. */
+  period?: string;
 }
 
-/** Una planta (en el código heredado se llama "organización"). */
+/** Una planta (en el código heredado se llama "organización"). Las cargas de todos los meses viven dentro de la planta. */
 export interface Organization {
   id: string;
   name: string;

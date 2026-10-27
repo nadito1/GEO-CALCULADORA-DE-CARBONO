@@ -1,7 +1,9 @@
 import { useSignal } from '@preact/signals';
-import { organizations, selectOrganization } from '../store';
+import { organizations, selectOrganization, periodFilter } from '../store';
 import { MODULE_CATALOG, SCOPE_INFO } from '../data/moduleCatalog';
-import { computeFootprint, formatCO2, formatNumber } from '../data/footprint';
+import { computeFootprint, formatCO2, formatNumber, formatPeriod } from '../data/footprint';
+import { PeriodFilter } from '../components/PeriodFilter';
+import { MonthlyChart } from '../components/MonthlyChart';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from 'recharts';
 import { t } from '../i18n';
 
@@ -12,7 +14,8 @@ export function StatisticsView() {
   const compare1 = useSignal<string>(orgs[0]?.id || '');
   const compare2 = useSignal<string>('');
 
-  const rows = orgs.map(org => ({ org, fp: computeFootprint(org) }));
+  const filter = periodFilter.value;
+  const rows = orgs.map(org => ({ org, fp: computeFootprint(org, filter) }));
   const total = rows.reduce(
     (acc, { fp }) => ({
       a1: acc.a1 + fp.byScope[1],
@@ -34,8 +37,8 @@ export function StatisticsView() {
   // Comparación de dos plantas por módulo
   const o1 = orgs.find(o => o.id === compare1.value);
   const o2 = orgs.find(o => o.id === compare2.value);
-  const f1 = o1 ? computeFootprint(o1) : null;
-  const f2 = o2 ? computeFootprint(o2) : null;
+  const f1 = o1 ? computeFootprint(o1, filter) : null;
+  const f2 = o2 ? computeFootprint(o2, filter) : null;
   const compareData = Object.values(MODULE_CATALOG)
     .filter(d => d.scope !== 0)
     .map(d => ({ name: d.title, p1: toT(f1?.byModule[d.id] || 0), p2: toT(f2?.byModule[d.id] || 0) }))
@@ -52,11 +55,14 @@ export function StatisticsView() {
 
   return (
     <div class="p-1 sm:p-4">
-      <h2 class="text-2xl sm:text-3xl font-bold mb-6 text-gray-900">{t('analyticsComparison')}</h2>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-gray-900">{t('analyticsComparison')}</h2>
+      <div class="mb-4">
+        <PeriodFilter orgs={orgs} value={filter} onChange={(v) => (periodFilter.value = v)} />
+      </div>
 
       {/* Total consolidado */}
       <div class="mb-6 p-4 sm:p-6 rounded-lg border border-gray-200 bg-white">
-        <p class="m-0 text-xs sm:text-sm text-gray-600">{t('allPlantsTotal').replace('{n}', String(orgs.length))}</p>
+        <p class="m-0 text-xs sm:text-sm text-gray-600">{t('allPlantsTotal').replace('{n}', String(orgs.length))} · <b>{formatPeriod(filter, true)}</b></p>
         <h3 class="m-0 mt-1 text-2xl sm:text-3xl font-bold text-accent-700">{formatCO2(total.all)}</h3>
         <div class="flex flex-wrap gap-x-5 gap-y-1 mt-2 text-xs sm:text-sm">
           {([1, 2, 3] as const).map(s => (
@@ -69,6 +75,8 @@ export function StatisticsView() {
           )}
         </div>
       </div>
+
+      <MonthlyChart orgs={orgs} filter={filter} onSelect={(p) => (periodFilter.value = p)} />
 
       {/* Huella por planta */}
       <div class="mb-6 bg-white p-3 sm:p-4 border border-gray-200 rounded-lg">

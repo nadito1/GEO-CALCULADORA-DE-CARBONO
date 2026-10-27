@@ -1,7 +1,9 @@
 import { useSignal } from '@preact/signals';
-import { activeOrg, addModuleInstanceWithValues, updateModuleInstance, deleteModuleInstance } from '../store';
+import { activeOrg, addModuleInstanceWithValues, updateModuleInstance, deleteModuleInstance, periodFilter } from '../store';
 import { MODULE_CATALOG, SCOPE_INFO, commutePeople } from '../data/moduleCatalog';
-import { computeFootprint, formatCO2, formatNumber } from '../data/footprint';
+import { computeFootprint, formatCO2, formatNumber, formatPeriod, matchesPeriod } from '../data/footprint';
+import { PeriodFilter } from '../components/PeriodFilter';
+import { MonthlyChart } from '../components/MonthlyChart';
 import { ModuleCard } from '../components/ModuleCard';
 import { AddModuleModal } from '../components/AddModuleModal';
 import { EditModuleModal } from '../components/EditModuleModal';
@@ -19,20 +21,24 @@ export function DashboardView() {
   const org = activeOrg.value;
   if (!org) return <p class="text-gray-500 p-4">{t('noOrganizationsMsg')}</p>;
 
-  const fp = computeFootprint(org);
+  const filter = periodFilter.value;
+  const fp = computeFootprint(org, filter);
+  const visible = org.modules
+    .filter(m => matchesPeriod(m.period, filter))
+    .sort((a, b) => (b.period || '').localeCompare(a.period || ''));
 
   // Indicador por persona para traslados
-  const commuteMods = org.modules.filter(m => m.defId === 'traslados_personal');
+  const commuteMods = visible.filter(m => m.defId === 'traslados_personal');
   const people = commuteMods.reduce((acc, m) => acc + commutePeople(m.submoduleValues), 0);
   const commuteKg = fp.byModule['traslados_personal'] || 0;
 
   const handleAddModule = (m: ModuleInstance) => {
-    addModuleInstanceWithValues(m.defId, m.value, m.submoduleValues);
+    addModuleInstanceWithValues(m.defId, m.value, m.submoduleValues, m.period);
     showAddModal.value = false;
   };
 
   const editModule = org.modules.find(m => m.id === editingModule.value);
-  const modulesOfScope = (s: Scope) => org.modules.filter(m => MODULE_CATALOG[m.defId]?.scope === s);
+  const modulesOfScope = (s: Scope) => visible.filter(m => MODULE_CATALOG[m.defId]?.scope === s);
 
   return (
     <div>
@@ -46,9 +52,13 @@ export function DashboardView() {
       )}
       {!org.updatedAt && <div class="mb-6" />}
 
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <PeriodFilter orgs={[org]} value={filter} onChange={(v) => (periodFilter.value = v)} />
+      </div>
+
       {/* Total */}
       <div class="mb-4 bg-gradient-to-r from-accent-50 to-brand-50 p-4 sm:p-6 rounded-lg border border-accent-200">
-        <p class="text-gray-600 text-xs sm:text-sm mb-1">{t('totalCO2')}</p>
+        <p class="text-gray-600 text-xs sm:text-sm mb-1">{t('totalCO2')} · <b>{formatPeriod(filter, true)}</b></p>
         <h3 class="text-2xl sm:text-4xl font-bold text-accent-700 m-0">{formatCO2(fp.total)}</h3>
         {fp.intensity !== null && (
           <p class="m-0 mt-2 text-sm text-gray-700">
@@ -86,14 +96,16 @@ export function DashboardView() {
         </div>
       )}
 
-      {fp.intensity === null && org.modules.length > 0 && (
+      <MonthlyChart orgs={[org]} filter={filter} onSelect={(p) => (periodFilter.value = p)} />
+
+      {fp.intensity === null && visible.length > 0 && (
         <p class="mb-6 text-xs text-gray-500">💡 {t('addProductionHint')}</p>
       )}
 
       {/* Módulos agrupados por alcance */}
       <div class="mb-8">
-        {org.modules.length === 0 ? (
-          <p class="text-gray-500 text-sm">{t('noModulesMsg')}</p>
+        {visible.length === 0 ? (
+          <p class="text-gray-500 text-sm">{org.modules.length === 0 ? t('noModulesMsg') : t('noModulesInPeriod')}</p>
         ) : (
           ([1, 2, 3, 0] as Scope[]).map(s => {
             const mods = modulesOfScope(s);
@@ -127,7 +139,7 @@ export function DashboardView() {
         </button>
       </div>
 
-      {showAddModal.value && <AddModuleModal onClose={() => (showAddModal.value = false)} onConfirm={handleAddModule} />}
+      {showAddModal.value && <AddModuleModal onClose={() => (showAddModal.value = false)} onConfirm={handleAddModule} defaultPeriod={filter} />}
 
       {editingModule.value && editModule && (
         <EditModuleModal

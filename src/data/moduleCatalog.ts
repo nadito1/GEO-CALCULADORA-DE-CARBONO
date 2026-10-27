@@ -41,7 +41,7 @@ const COMMUTE_MODES: { key: TransportKey; perVehicle: boolean }[] = [
 ];
 
 const commuteSubmodules: SubmoduleDef[] = [
-  { id: 'dias', title: 'Días trabajados en el período', unit: 'días', group: 'Datos generales', hint: 'Ej. 22 para un mes, 250 para un año' },
+  { id: 'dias', title: 'Días trabajados en el mes', unit: 'días', group: 'Datos generales', hint: 'Ej. 22' },
   { id: 'ocupacion_auto', title: 'Personas por auto (promedio)', unit: 'pers.', group: 'Datos generales', default: 1, hint: 'Si comparten auto, ej. 2' },
   ...COMMUTE_MODES.flatMap(({ key }) => [
     { id: `${key}_personas`, title: 'Personas', unit: 'pers.', group: AR.transport[key].label },
