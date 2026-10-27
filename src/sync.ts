@@ -93,10 +93,29 @@ async function call(payload: Record<string, unknown> | null): Promise<ApiRespons
       body: JSON.stringify({ ...payload, key: code, user }),
     });
   }
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = (await res.json()) as ApiResponse;
-  if (!data.ok) throw new Error(data.error === 'clave' ? 'Código de acceso incorrecto' : data.error || 'Error del registro');
+  if (!res.ok) throw new Error(`El registro respondió con error (HTTP ${res.status})`);
+  let data: ApiResponse;
+  try {
+    data = (await res.json()) as ApiResponse;
+  } catch {
+    throw new Error('El registro no devolvió datos válidos. Revisá la implementación del script.');
+  }
+  if (!data.ok) {
+    if (data.error === 'clave') throw new Error('Código de acceso incorrecto');
+    if (data.error === 'ocupado') throw new Error('El registro está ocupado, se reintenta en unos segundos');
+    throw new Error(data.error || 'Error del registro');
+  }
   return data;
+}
+
+/** Traduce errores de red ("Failed to fetch") a un mensaje entendible. */
+function describeError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (!navigator.onLine) return 'Sin conexión a internet: los cambios se envían cuando vuelva la señal';
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(msg)) {
+    return 'No se pudo conectar con el registro de Google (la red puede estar bloqueando script.google.com, o el script falló)';
+  }
+  return msg;
 }
 
 function summary(org: Organization) {
@@ -207,32 +226,35 @@ async function doSync() {
 
     syncState.value = { state: 'ok', last: new Date().toISOString() };
   } catch (err) {
-    syncState.value = {
-      state: 'error',
-      message: err instanceof Error ? err.message : String(err),
-      last: syncState.value.last,
-    };
+    syncState.value = { state: 'error', message: describeError(err), last: syncState.value.last };
+    retryLater();
   }
 }
 
+/** Ante un error, reintenta en 20 s (además de la sincronización periódica). */
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+function retryLater() {
+  if (retryTimer) return;
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    void syncNow();
+  }, 20_000);
+}
+
 // ---------- Envío automático de cambios ----------
-const timers = new Map<string, ReturnType<typeof setTimeout>>();
 let syncSoon: ReturnType<typeof setTimeout> | null = null;
 
 /** Agrupa varios avisos seguidos (por ejemplo, muchas bajas de una importación) en una sola sincronización. */
-function scheduleSync() {
+function scheduleSync(delay = 300) {
   if (syncSoon) clearTimeout(syncSoon);
   syncSoon = setTimeout(() => {
     syncSoon = null;
     void syncNow();
-  }, 300);
+  }, delay);
 }
 
 onOrganizationChange((orgId, deleted) => {
   if (deleted) {
-    const prev = timers.get(orgId);
-    if (prev) clearTimeout(prev);
-    timers.delete(orgId);
     if (!isConfigured()) return;
     const list = pendingDeletes().filter(d => d.id !== orgId);
     list.push({ id: orgId, name: '' });
@@ -241,27 +263,8 @@ onOrganizationChange((orgId, deleted) => {
     return;
   }
   if (!isConfigured()) return;
-  const prev = timers.get(orgId);
-  if (prev) clearTimeout(prev);
-  timers.set(
-    orgId,
-    setTimeout(async () => {
-      timers.delete(orgId);
-      const org = organizations.value.find(o => o.id === orgId);
-      if (!org) return;
-      syncState.value = { ...syncState.value, state: 'syncing' };
-      try {
-        await pushOrg(org);
-        syncState.value = { state: 'ok', last: new Date().toISOString() };
-      } catch (err) {
-        syncState.value = {
-          state: 'error',
-          message: err instanceof Error ? err.message : String(err),
-          last: syncState.value.last,
-        };
-      }
-    }, 1500),
-  );
+  // Agrupa los cambios y los envía en una sola sincronización, de a una planta por vez.
+  scheduleSync(1500);
 });
 
 /** Arranca la sincronización periódica. Se llama una vez al iniciar la app. */

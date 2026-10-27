@@ -26,9 +26,13 @@ const COLS_HISTORIAL = [
 ];
 
 function doGet(e) {
-  const p = (e && e.parameter) || {};
-  if (p.key !== CODIGO_ACCESO) return salida({ ok: false, error: 'clave' });
-  return salida({ ok: true, plants: listarPlantas() });
+  try {
+    const p = (e && e.parameter) || {};
+    if (p.key !== CODIGO_ACCESO) return salida({ ok: false, error: 'clave' });
+    return salida({ ok: true, plants: listarPlantas() });
+  } catch (err) {
+    return salida({ ok: false, error: 'Error en el script: ' + err });
+  }
 }
 
 function doPost(e) {
@@ -40,8 +44,9 @@ function doPost(e) {
   }
   if (datos.key !== CODIGO_ACCESO) return salida({ ok: false, error: 'clave' });
 
+  // Si otro dispositivo está guardando, se espera hasta 25 s; si no se libera, la app reintenta.
   const lock = LockService.getScriptLock();
-  lock.waitLock(20000);
+  if (!lock.tryLock(25000)) return salida({ ok: false, error: 'ocupado' });
   try {
     const usuario = String(datos.user || '').slice(0, 100);
     if (datos.action === 'upsert' && datos.plant && datos.plant.id) {
@@ -53,9 +58,20 @@ function doPost(e) {
       return salida({ ok: true });
     }
     return salida({ ok: false, error: 'accion' });
+  } catch (err) {
+    return salida({ ok: false, error: 'Error en el script: ' + err });
   } finally {
     lock.releaseLock();
   }
+}
+
+/**
+ * Prueba manual: en el editor elegí "probarRegistro" en la lista de funciones y tocá Ejecutar.
+ * Si en el registro de ejecución aparece "OK", el script y la planilla funcionan.
+ */
+function probarRegistro() {
+  const n = listarPlantas().length;
+  Logger.log('OK – plantas en el registro: ' + n);
 }
 
 // ---------- Lógica ----------
