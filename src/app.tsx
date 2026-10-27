@@ -31,7 +31,7 @@ function Navbar() {
         ) : (
           <img src={logoPath} alt="" class="h-8 w-8 rounded-lg" />
         )}
-        <span class="flex flex-col leading-tight">
+        <span class={`${BRAND_LOGO ? "hidden sm:flex" : "flex"} flex-col leading-tight`}>
           {!BRAND_LOGO && <span class="text-brand-700 font-extrabold tracking-wide text-base">GEORGALOS</span>}
           <span class="text-[10px] sm:text-xs font-semibold text-accent-600 uppercase tracking-wider whitespace-nowrap">{t('appSubtitle')}</span>
         </span>
