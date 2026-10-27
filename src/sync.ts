@@ -45,10 +45,16 @@ function writeJSON(key: string, value: unknown) {
   }
 }
 
-export const syncConfig = signal<SyncConfig>(readJSON(CFG_KEY, { url: REGISTRO_URL, code: '', user: '' }));
+function loadConfig(): SyncConfig {
+  const cfg = readJSON<SyncConfig>(CFG_KEY, { url: REGISTRO_URL, code: '', user: '' });
+  // Si el usuario no cargó una URL propia, se usa la del registro oficial.
+  return { ...cfg, url: cfg.url || REGISTRO_URL };
+}
+
+export const syncConfig = signal<SyncConfig>(loadConfig());
 
 export function saveSyncConfig(cfg: SyncConfig) {
-  syncConfig.value = { url: cfg.url.trim(), code: cfg.code.trim(), user: cfg.user.trim() };
+  syncConfig.value = { url: cfg.url.trim() || REGISTRO_URL, code: cfg.code.trim(), user: cfg.user.trim() };
   writeJSON(CFG_KEY, syncConfig.value);
   if (isConfigured()) void syncNow();
   else syncState.value = { state: 'off' };
